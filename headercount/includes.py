@@ -145,17 +145,37 @@ def iter_includes(file_):
 
 class Include(str):
 
+    """Type representing `#include` directives.
+
+    For speed and ease of implementation, this inherits from `str`.
+    """
+
     def __init__(self, *args, **kwargs):
+        """Create a new instance.
+
+        Examples:
+
+            >>> Include('<vector>')
+            >>> Include('"MyHeader.hpp"')
+
+        Raises:
+            ValueError if the given string is not wrapped by
+                `#include`-style quotes (either double quotes or angle
+                brackets).
+        """
+        str.__init__(self, *args, **kwargs)
         is_system = self[0] == '<' and self[-1] == '>'
         is_regular = self[0] == '"' == self[-1]
         if not (is_system or is_regular):
             raise ValueError('cannot find quotes: '+repr(self))
 
     def __repr__(self):
-        return '{}({})'.format(type(self).__name__, repr(self._inner))
+        return '{}({})'.format(type(self).__name__, str(self))
 
     def is_system(self):
-        return self._inner[0] == '<'
+        """Return `True` if the include directive uses angle brackets."""
+        return self[0] == '<'
 
     def unquoted(self):
+        """Remove quotes and return the basename of the included file."""
         return self[1:-1]
