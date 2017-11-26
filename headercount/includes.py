@@ -55,13 +55,17 @@ def _get_deep_includes_lists(flat_lists):
 
     def _iter_project_includes(path):
         """Iterate a file's direct includes, skip those not to be searched."""
-        return (include for include in flat_lists[path] if include in flat_lists)
+        return (include for include in flat_lists[path]
+                if include in include_map)
 
     def _collect_all_includes(path):
         """Put together the direct and indirect includes of a file."""
         direct_includes = flat_lists[path]
-        indirect_includes = (inclusive_lists.get(direct_include, [])
-                             for direct_include in direct_includes)
+        direct_include_files = (include_map.get(direct_include)
+                                for direct_include in direct_includes)
+        indirect_includes = (inclusive_lists.get(path, [])
+                             for path in direct_include_files
+                             if path)
         return list(itertools.chain(direct_includes, *indirect_includes))
 
     # Iterative depth-first search with a stack of iterators.
