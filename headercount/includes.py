@@ -150,6 +150,45 @@ class Include:
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self._inner))
 
+    def __hash__(self):
+        return self._inner.__hash__()
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self._inner == other._inner
+        else:
+            False
+
+    def __ne__(self, other):
+        if isinstance(other, type(self)):
+            return self._inner != other._inner
+        else:
+            True
+
+    def __lt__(self, other):
+        if isinstance(other, type(self)):
+            return self._inner < other._inner
+        else:
+            return self._inner < other
+
+    def __le__(self, other):
+        if isinstance(other, type(self)):
+            return self._inner <= other._inner
+        else:
+            return self._inner <= other
+
+    def __gt__(self, other):
+        if isinstance(other, type(self)):
+            return self._inner > other._inner
+        else:
+            return self._inner > other
+
+    def __ge__(self, other):
+        if isinstance(other, type(self)):
+            return self._inner >= other._inner
+        else:
+            return self._inner >= other
+
     def is_system(self):
         return self._inner[0] == '<'
 
