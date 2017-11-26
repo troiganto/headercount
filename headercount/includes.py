@@ -2,6 +2,13 @@
 """Functions that search files for include directives."""
 
 
+import itertools
+
+
+class AmbiguousName(Exception):
+    """There is more than one matching file for an include directive."""
+
+
 def get_includes_lists(paths, inclusive):
     """For each path in `paths`, return a list of included files.
 
@@ -38,6 +45,11 @@ def _get_deep_includes_lists(flat_lists):
 
     """Takes the result of `get_includes_lists` and expands it."""
 
+    include_map = _build_include_map(
+        includes=set(itertools.chain.from_iterable(flat_lists.values())),
+        available_files=flat_lists.keys(),
+        )
+
     # The dict in which we collect our results.
     inclusive_lists = {}
 
@@ -50,7 +62,7 @@ def _get_deep_includes_lists(flat_lists):
         direct_includes = flat_lists[path]
         indirect_includes = (inclusive_lists.get(direct_include, [])
                              for direct_include in direct_includes)
-        return sum(indirect_includes, direct_includes)
+        return list(itertools.chain(direct_includes, *indirect_includes))
 
     # Iterative depth-first search with a stack of iterators.
     stack = [(path, _iter_project_includes(path)) for path in flat_lists]
@@ -62,16 +74,42 @@ def _get_deep_includes_lists(flat_lists):
             # direct include of `path`. Now we can put them together.
             inclusive_lists[path] = _collect_all_includes(path)
             stack.pop()
-        elif include not in inclusive_lists:
-            # We have not found the includes of this include yet --
-            # descend into it.
-            stack.append((include, _iter_project_includes(include)))
-        else:
-            # We have handled this include already or the user has not
-            # requested it to be searched.
-            pass
+            continue
+        # Guess which file this include directive references.
+        include_file = include_map.get(include)
+        if include_file and include_file not in inclusive_lists:
+            # The included file is to be searched and we have not
+            # searched it already. Thus, we descend into it.
+            stack.append((include_file, _iter_project_includes(include_file)))
 
     return inclusive_lists
+
+
+def _build_include_map(includes, available_files):
+    """Build a map of guesses which include directive maps to which file.
+
+    Args:
+        includes: A list of `Include` objects.
+        available_files: A list of files that the include directives
+            could possibly map to.
+
+    Returns:
+        A mapping `include => available_file` of all `include`s for
+        which a file could be found.
+
+    Raises:
+        `AmbiguousName` if there are several candidates for a given
+        `include`.
+    """
+    result = {}
+    for include in includes:
+        candidates = [path for path in available_files
+                      if path.name == include.unquoted()]
+        if len(candidates) > 1:
+            raise AmbiguousName(str(include))
+        elif candidates:
+            (result[include],) = candidates
+    return result
 
 
 def iter_includes(file_):
@@ -92,23 +130,28 @@ def iter_includes(file_):
         parts = line[1:].split()
         if parts[0] != 'include':
             continue
-        yield parts[1]
+        yield Include(parts[1])
 
 
-def unquote(name):
-    """Remove #include-like quotes from a string.
+class Include:
 
-    This removes a single level of surrounding double quotes (`"..."`)
-    or angle brackets (`<...>`) from `name`.
+    __slots__ = ['_inner']
 
-    Returns:
+    def __init__(self, include):
+        is_system = include[0] == '<' and include[-1] == '>'
+        is_regular = include[0] == '"' == include[-1]
+        if not (is_system or is_regular):
+            raise ValueError('cannot find quotes: '+repr(include))
+        self._inner = include
 
-    Raises:
-        ValueError: if `name` has no surrounding quotes.
-    """
-    if name[0] == '"' == name[-1]:
-        return name[1:-1]
-    elif name[0] == '<' and name[-1] == '>':
-        return name[1:-1]
-    else:
-        raise ValueError('cannot find quotes: '+repr(name))
+    def __str__(self):
+        return self._inner
+
+    def __repr__(self):
+        return '{}({})'.format(type(self).__name__, repr(self._inner))
+
+    def is_system(self):
+        return self._inner[0] == '<'
+
+    def unquoted(self):
+        return self._inner[1:-1]
