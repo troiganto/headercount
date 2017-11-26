@@ -137,64 +137,19 @@ def iter_includes(file_):
         yield Include(parts[1])
 
 
-class Include:
+class Include(str):
 
-    __slots__ = ['_inner']
-
-    def __init__(self, include):
-        is_system = include[0] == '<' and include[-1] == '>'
-        is_regular = include[0] == '"' == include[-1]
+    def __init__(self, *args, **kwargs):
+        is_system = self[0] == '<' and self[-1] == '>'
+        is_regular = self[0] == '"' == self[-1]
         if not (is_system or is_regular):
-            raise ValueError('cannot find quotes: '+repr(include))
-        self._inner = include
-
-    def __str__(self):
-        return self._inner
+            raise ValueError('cannot find quotes: '+repr(self))
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self._inner))
-
-    def __hash__(self):
-        return self._inner.__hash__()
-
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            return self._inner == other._inner
-        else:
-            False
-
-    def __ne__(self, other):
-        if isinstance(other, type(self)):
-            return self._inner != other._inner
-        else:
-            True
-
-    def __lt__(self, other):
-        if isinstance(other, type(self)):
-            return self._inner < other._inner
-        else:
-            return self._inner < other
-
-    def __le__(self, other):
-        if isinstance(other, type(self)):
-            return self._inner <= other._inner
-        else:
-            return self._inner <= other
-
-    def __gt__(self, other):
-        if isinstance(other, type(self)):
-            return self._inner > other._inner
-        else:
-            return self._inner > other
-
-    def __ge__(self, other):
-        if isinstance(other, type(self)):
-            return self._inner >= other._inner
-        else:
-            return self._inner >= other
 
     def is_system(self):
         return self._inner[0] == '<'
 
     def unquoted(self):
-        return self._inner[1:-1]
+        return self[1:-1]
