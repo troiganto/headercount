@@ -68,7 +68,8 @@ def _get_deep_includes_lists(flat_lists):
         return list(itertools.chain(direct_includes, *indirect_includes))
 
     # Iterative depth-first search with a stack of iterators.
-    stack = [(path, _iter_direct_includes(path)) for path in flat_lists]
+    stack = [(path, _iter_direct_includes(path)) for path in flat_lists.keys()]
+    files_being_searched = set(flat_lists.keys())
     while stack:
         path, includes_to_handle = stack[-1]
         include = next(includes_to_handle, None)
@@ -76,14 +77,20 @@ def _get_deep_includes_lists(flat_lists):
             # We have collected all direct+indirect includes for every
             # direct include of `path`. Now we can put them together.
             inclusive_lists[path] = _collect_all_includes(path)
+            files_being_searched.remove(path)
             stack.pop()
             continue
         # Guess which file this include directive references.
         include_file = include_map.get(include)
-        if include_file and include_file not in inclusive_lists:
+        is_to_be_searched = (include_file
+                             and include_file not in inclusive_lists
+                             and include_file not in files_being_searched)
+        if is_to_be_searched:
             # The included file is to be searched and we have not
-            # searched it already. Thus, we descend into it.
+            # searched it already _and_ it is not included in a
+            # circular manner. Thus, we descend into it.
             stack.append((include_file, _iter_direct_includes(include_file)))
+            files_being_searched.add(include_file)
 
     return inclusive_lists
 
