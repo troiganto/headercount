@@ -92,8 +92,7 @@ def iter_includes(file_):
         parts = line[1:].split()
         if parts[0] != 'include':
             continue
-        include = unquote(parts[1])
-        yield include
+        yield parts[1]
 
 
 def unquote(name):
