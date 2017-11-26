@@ -58,4 +58,4 @@ def _iter_input_files_deep(args, exclude, exclude_dir):
 
 def _any_match(path, patterns):
     """True if any of the given patterns match `path`."""
-    return any(path.matches(pattern) for pattern in patterns)
+    return any(path.match(pattern) for pattern in patterns)
