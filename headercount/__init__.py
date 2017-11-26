@@ -25,22 +25,38 @@ def get_parser():
     parser.add_argument('-r', '--recursive', action='store_true')
     parser.add_argument('--exclude', type=str, action='append', default=[])
     parser.add_argument('--exclude-dir', type=str, action='append', default=[])
+    parser.add_argument('--mode', default='inclusive-unique',
+                        choices=['direct', 'inclusive', 'inclusive-unique'])
     return parser
 
 
 def main(argv):
     """Main function. You should pass `sys.argv[1:]` as argument."""
     args = get_parser().parse_args(argv)
+    # Build the list of files that are to be searched.
     infiles = iter_input_files(
         args.infiles,
         recursive=args.recursive,
         exclude=args.exclude,
         exclude_dir=args.exclude_dir
         )
-    counters = [
-        Counter(includes)
-        for (_, includes) in get_includes_lists(infiles).items()
-        ]
-    counter = sum(counters, Counter())
-    for (filename, count) in sum(counters, Counter()).most_common():
+    # Search each file for a list of included files -- either
+    # direct+indirect includes or direct includes only.
+    includes_lists = get_includes_lists(infiles, 'inclusive' in args.mode)
+    # Turn the lists into sets if we are not interested in duplicates.
+    # (Otherwise, a single file might seem to `#include <vector>`
+    # dozens of times.)
+    if 'unique' in args.mode:
+        includes_lists = {
+            path: set(includes)
+            for (path, includes) in includes_lists.items()
+            }
+    # Turn the lists into counters. Note: If we just removed
+    # duplicates, all counters will be `1` at max.
+    counters = (Counter(includes) for includes in includes_lists.values())
+    # Put the counters together. This is where we get the actual
+    # statistics!
+    total_count = sum(counters, Counter())
+    # Print to stdout.
+    for (filename, count) in total_count.most_common():
         print(count, filename)
