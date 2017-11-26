@@ -13,51 +13,7 @@ from pathlib import Path
 from collections import Counter
 
 from headercount.files import iter_input_files
-
-
-def unquote(name):
-    """Remove #include-like quotes from a string.
-
-    This removes a single level of surrounding double quotes (`"..."`)
-    or angle brackets (`<...>`) from `name`.
-
-    Returns:
-
-    Raises:
-        ValueError: if `name` has no surrounding quotes.
-    """
-    if name[0] == '"' == name[-1]:
-        return name[1:-1]
-    elif name[0] == '<' and name[-1] == '>':
-        return name[1:-1]
-    else:
-        raise ValueError('cannot find quotes: '+repr(name))
-
-
-def iter_includes(file_):
-    """Iterate over include directives in a file.
-
-    Args:
-        file_: Either a file object or a path to a file to be opened.
-        ignore_system: If `True`, "#include <...>" lines are ignored.
-
-    Returns:
-        An iterator over files included by `file_`. Inclusion is
-        determined by searching for #include directives.
-    """
-    if isinstance(file_, str):
-        file_ = open(file_)
-    elif isinstance(file_, Path):
-        file_ = file_.open()
-    for line in file_:
-        line = line.lstrip()
-        if not line.startswith('#'):
-            continue
-        parts = line[1:].split()
-        if parts[0] != 'include':
-            continue
-        include = unquote(parts[1])
-        yield include
+from headercount.includes import get_includes_lists
 
 
 def get_parser():
@@ -81,7 +37,10 @@ def main(argv):
         exclude=args.exclude,
         exclude_dir=args.exclude_dir
         )
-    counters = [Counter(iter_includes(infile)) for infile in infiles]
+    counters = [
+        Counter(includes)
+        for (_, includes) in get_includes_lists(infiles).items()
+        ]
     counter = sum(counters, Counter())
     for (filename, count) in sum(counters, Counter()).most_common():
         print(count, filename)
