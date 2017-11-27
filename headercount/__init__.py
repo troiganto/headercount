@@ -56,8 +56,8 @@ def get_parser():
     parser.add_argument('-r', '--recursive', action='store_true')
     parser.add_argument('--exclude', type=str, action='append', default=[])
     parser.add_argument('--exclude-dir', type=str, action='append', default=[])
-    parser.add_argument('--mode', default='inclusive-unique',
-                        choices=['direct', 'inclusive', 'inclusive-unique'])
+    parser.add_argument('-d', '--direct-only', action='store_true')
+    parser.add_argument('--allow-duplicates', action='store_true')
     parser.add_argument('-S', '--no-system', action='store_true')
     parser.add_argument('-H', '--no-headers', action='store_true')
     return parser
@@ -75,12 +75,15 @@ def main(argv):
         )
     # Search each file for a list of included files -- either
     # direct+indirect includes or direct includes only.
-    includes_lists = get_includes_lists(infiles, 'inclusive' in args.mode)
+    includes_lists = get_includes_lists(
+        infiles,
+        inclusive=not args.direct_only,
+        )
     prune_includes_lists(
         includes_lists,
         system=args.no_system,
         headers=args.no_headers,
-        duplicates='unique' in args.mode,
+        duplicates=not args.allow_duplicates,
         )
     # Turn the lists into counters. Note: If we removed duplicates in
     # the step above, all counters will be `1` at max.
