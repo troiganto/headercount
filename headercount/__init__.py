@@ -53,14 +53,42 @@ def get_parser():
     parser = argparse.ArgumentParser(description=description,
                                      epilog=epilog)
     inctrl = parser.add_argument_group('input control')
-    inctrl.add_argument('-r', '--recursive', action='store_true')
-    inctrl.add_argument('--exclude', type=str, action='append', default=[])
-    inctrl.add_argument('--exclude-dir', type=str, action='append', default=[])
-    inctrl.add_argument('infiles', type=str, nargs='+')
-    parser.add_argument('-S', '--no-system', action='store_true')
-    parser.add_argument('-H', '--no-headers', action='store_true')
-    parser.add_argument('-d', '--direct-only', action='store_true')
-    parser.add_argument('--allow-duplicates', action='store_true')
+    inctrl.add_argument('-r', '--recursive', action='store_true',
+                        help='Recursively search directories for C/C++ '
+                        'files.')
+    inctrl.add_argument('--exclude', type=str, action='append', default=[],
+                        metavar='PATTERN', help='Skip any file whose '
+                        'name matches %(metavar)s.')
+    inctrl.add_argument('--exclude-dir', type=str, action='append', default=[],
+                        metavar='PATTERN', help='If -r is passed, do '
+                        'not recurse into directories whose name '
+                        'matches %(metavar)s. If -r is not passed, '
+                        'this does not do anything.')
+    parser.add_argument('infiles', type=str, nargs='+', metavar='FILE',
+                        help='A file to search for include files. If '
+                        '%(metavar)s does not have the suffix of a '
+                        'C/C++ file, it is ignored. If -r is passed, '
+                        'this may also be a directory to search for '
+                        'C/C++ files.')
+    parser.add_argument('-S', '--no-system', action='store_true',
+                        help='System-header includes do not count '
+                        'towards the final tally. System-header '
+                        'includes are those that use angle brackets '
+                        '(<...>) instead of double quotes.')
+    parser.add_argument('-H', '--no-headers', action='store_true',
+                        help='Header files do not count towards the '
+                        'final tally. They are, however, still used to '
+                        'find indirect includes.')
+    parser.add_argument('-d', '--direct-only', action='store_true',
+                        help='Do not search for indirectly included '
+                        'files. Just count the number of #include '
+                        'directives.')
+    parser.add_argument('--allow-duplicates', action='store_true',
+                        help='If a file is included multiple times '
+                        '(literally or due to indirect includes), '
+                        'count all occurrences. The default is to '
+                        'assume that each file can each other file at '
+                        'most once.')
     return parser
 
 
