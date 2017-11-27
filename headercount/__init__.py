@@ -52,14 +52,15 @@ def get_parser():
     description, _, epilog = __doc__.partition("\n")
     parser = argparse.ArgumentParser(description=description,
                                      epilog=epilog)
-    parser.add_argument('infiles', type=str, nargs='+')
-    parser.add_argument('-r', '--recursive', action='store_true')
-    parser.add_argument('--exclude', type=str, action='append', default=[])
-    parser.add_argument('--exclude-dir', type=str, action='append', default=[])
-    parser.add_argument('-d', '--direct-only', action='store_true')
-    parser.add_argument('--allow-duplicates', action='store_true')
+    inctrl = parser.add_argument_group('input control')
+    inctrl.add_argument('-r', '--recursive', action='store_true')
+    inctrl.add_argument('--exclude', type=str, action='append', default=[])
+    inctrl.add_argument('--exclude-dir', type=str, action='append', default=[])
+    inctrl.add_argument('infiles', type=str, nargs='+')
     parser.add_argument('-S', '--no-system', action='store_true')
     parser.add_argument('-H', '--no-headers', action='store_true')
+    parser.add_argument('-d', '--direct-only', action='store_true')
+    parser.add_argument('--allow-duplicates', action='store_true')
     return parser
 
 
