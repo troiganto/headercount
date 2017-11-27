@@ -3,12 +3,13 @@
 
 from pathlib import Path
 
+HEADER_SUFFIXES = frozenset(['.h', '.H', '.hh', '.hp', '.hpp', '.HPP',
+                             '.hxx', '.h++', '.inl', '.tcc', '.icc'])
 
-CPP_SUFFIXES = frozenset([
-    '.h', '.H', '.hh', '.hp', '.hpp', '.HPP', '.hxx', '.h++',
-    '.c', '.C', '.cc', '.cp', '.cpp', '.CPP', '.cxx', '.c++',
-    '.inl', '.tcc', '.icc', '.i', '.ii',
-    ])
+SOURCE_SUFFIXES = frozenset(['.c', '.C', '.cc', '.cp', '.cpp', '.CPP',
+                             '.cxx', '.c++', '.i', '.ii'])
+
+CPP_SUFFIXES = frozenset.union(HEADER_SUFFIXES, SOURCE_SUFFIXES)
 
 
 def iter_input_files(args, recursive, exclude, exclude_dir):

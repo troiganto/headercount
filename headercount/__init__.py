@@ -51,8 +51,8 @@ def main(argv):
             path: set(includes)
             for (path, includes) in includes_lists.items()
             }
-    # Turn the lists into counters. Note: If we just removed
-    # duplicates, all counters will be `1` at max.
+    # Turn the lists into counters. Note: If we removed duplicates in
+    # the step above, all counters will be `1` at max.
     counters = (Counter(includes) for includes in includes_lists.values())
     # Put the counters together. This is where we get the actual
     # statistics!
