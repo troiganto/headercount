@@ -27,6 +27,7 @@ def get_parser():
     parser.add_argument('--exclude-dir', type=str, action='append', default=[])
     parser.add_argument('--mode', default='inclusive-unique',
                         choices=['direct', 'inclusive', 'inclusive-unique'])
+    parser.add_argument('-S', '--no-system', action='store_true')
     return parser
 
 
@@ -43,6 +44,12 @@ def main(argv):
     # Search each file for a list of included files -- either
     # direct+indirect includes or direct includes only.
     includes_lists = get_includes_lists(infiles, 'inclusive' in args.mode)
+    # Filter out all system header includes.
+    if args.no_system:
+        for includes in includes_lists.values():
+            filtered = [include for include in includes
+                        if not include.is_system()]
+            includes[:] = filtered
     # Turn the lists into sets if we are not interested in duplicates.
     # (Otherwise, a single file might seem to `#include <vector>`
     # dozens of times.)
