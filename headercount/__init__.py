@@ -12,6 +12,7 @@ import argparse
 from pathlib import Path
 from collections import Counter
 
+from headercount.files import HEADER_SUFFIXES
 from headercount.files import iter_input_files
 from headercount.includes import get_includes_lists
 
@@ -28,6 +29,7 @@ def get_parser():
     parser.add_argument('--mode', default='inclusive-unique',
                         choices=['direct', 'inclusive', 'inclusive-unique'])
     parser.add_argument('-S', '--no-system', action='store_true')
+    parser.add_argument('-H', '--no-headers', action='store_true')
     return parser
 
 
@@ -50,6 +52,11 @@ def main(argv):
             filtered = [include for include in includes
                         if not include.is_system()]
             includes[:] = filtered
+    # Filter out all header files so we don't count their includes twice.
+    if args.no_headers:
+        includes_lists = {path: includes
+                          for (path, includes) in includes_lists.items()
+                          if path.suffix not in HEADER_SUFFIXES}
     # Turn the lists into sets if we are not interested in duplicates.
     # (Otherwise, a single file might seem to `#include <vector>`
     # dozens of times.)
