@@ -150,7 +150,7 @@ class Include(str):
     For speed and ease of implementation, this inherits from `str`.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):
         """Create a new instance.
 
         Examples:
@@ -163,11 +163,12 @@ class Include(str):
                 `#include`-style quotes (either double quotes or angle
                 brackets).
         """
-        str.__init__(self, *args, **kwargs)
-        is_system = self[0] == '<' and self[-1] == '>'
-        is_regular = self[0] == '"' == self[-1]
+        result = super().__new__(cls, *args, **kwargs)
+        is_system = result[0] == '<' and result[-1] == '>'
+        is_regular = result[0] == '"' == result[-1]
         if not (is_system or is_regular):
-            raise ValueError('cannot find quotes: '+repr(self))
+            raise ValueError('cannot find quotes: '+repr(result))
+        return result
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, str(self))
