@@ -17,6 +17,36 @@ from headercount.files import iter_input_files
 from headercount.includes import get_includes_lists
 
 
+def prune_includes_lists(includes_lists, *, headers=False, system=False,
+                         duplicates=False):
+    """Remove information from the list of includes lists.
+
+    Args:
+        includes_lists: A `dict` from file `Path` to lists of
+            `Include`s in that file. This `dict` is modified in-place.
+        headers: Remove all header files (and their includes lists)
+            from `includes_lists`.
+        system: Remove all system-header includes from each list in
+            `includes_lists`.
+        duplicates: For each list in `includes_lists`, remove all
+            duplicate `Include`s.
+    """
+    if headers:
+        files = list(includes_lists.keys())
+        for file_ in files:
+            if file_.suffix in HEADER_SUFFIXES:
+                del includes_lists[file_]
+    if system or duplicates:
+        for includes in includes_lists.values():
+            filtered = includes
+            if duplicates:
+                filtered = set(filtered)
+            if system:
+                filtered = (include for include in filtered
+                            if not include.is_system())
+            includes[:] = filtered
+
+
 def get_parser():
     """Return an argparse.ArgumentParser instance."""
     description, _, epilog = __doc__.partition("\n")
@@ -46,25 +76,12 @@ def main(argv):
     # Search each file for a list of included files -- either
     # direct+indirect includes or direct includes only.
     includes_lists = get_includes_lists(infiles, 'inclusive' in args.mode)
-    # Filter out all system header includes.
-    if args.no_system:
-        for includes in includes_lists.values():
-            filtered = [include for include in includes
-                        if not include.is_system()]
-            includes[:] = filtered
-    # Filter out all header files so we don't count their includes twice.
-    if args.no_headers:
-        includes_lists = {path: includes
-                          for (path, includes) in includes_lists.items()
-                          if path.suffix not in HEADER_SUFFIXES}
-    # Turn the lists into sets if we are not interested in duplicates.
-    # (Otherwise, a single file might seem to `#include <vector>`
-    # dozens of times.)
-    if 'unique' in args.mode:
-        includes_lists = {
-            path: set(includes)
-            for (path, includes) in includes_lists.items()
-            }
+    prune_includes_lists(
+        includes_lists,
+        system=args.no_system,
+        headers=args.no_headers,
+        duplicates='unique' in args.mode,
+        )
     # Turn the lists into counters. Note: If we removed duplicates in
     # the step above, all counters will be `1` at max.
     counters = (Counter(includes) for includes in includes_lists.values())
