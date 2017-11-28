@@ -16,10 +16,11 @@
 
 """Count which header is included how many times.
 
-This script combs through a C/C++ project and counts for each file how
-many times it was included by another file. This count is usually done
-inclusively, i.e. a headers included by other headers are counted
-multiple times. But exclusive counts are possible, too.
+This script goes through a C or C++ project and searches for #include
+directives. It recursively follows project header includes and prints
+statistics about which header was included how many times. This
+indicates which headers are depended on the most, which is useful when
+debugging long compile times of medium-sized projects.
 """
 
 import sys
