@@ -96,9 +96,9 @@ def _get_deep_includes_lists(flat_lists):
             continue
         # Guess which file this include directive references.
         include_file = include_map.get(include)
-        is_to_be_searched = (include_file
-                             and include_file not in inclusive_lists
-                             and include_file not in files_being_searched)
+        is_to_be_searched = (include_file and
+                             include_file not in inclusive_lists and
+                             include_file not in files_being_searched)
         if is_to_be_searched:
             # The included file is to be searched and we have not
             # searched it already _and_ it is not included in a
