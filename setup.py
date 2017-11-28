@@ -16,6 +16,7 @@
 # limitations under the License.
 
 from setuptools import setup, find_packages
+from headercount import get_version
 
 
 long_description = """Headercount goes through a C or C++ project and
@@ -27,7 +28,7 @@ useful when debugging long compile times of medium-sized projects.
 
 setup(
     name='headercount',
-    version='0.1',
+    version=get_version(),
     python_requires='>=3.4',
     packages=['headercount'],
     entry_points={
