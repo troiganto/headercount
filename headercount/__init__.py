@@ -35,7 +35,7 @@ from headercount.includes import get_includes_lists
 
 def get_version():
     """Return the version of this package as a string."""
-    return '0.1.0'
+    return '1.0.0'
 
 
 def prune_includes_lists(includes_lists, *, headers=False, system=False,

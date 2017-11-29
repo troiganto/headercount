@@ -43,7 +43,7 @@ setup(
     long_description=long_description,
     license='Apache License, Version 2.0',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Debuggers',
