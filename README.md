@@ -19,10 +19,18 @@ Python 3.4 or higher. It has no dependencies beyond the Python standard
 library. The easiest way to install it is via pip:
 
 ```bash
-pip install headercount
+pip3 install headercount
 ```
 
-You can also install it manually by cloning this repository:
+You can also download the latest wheel from the [Releases][] page and
+install that:
+
+```bash
+pip3 install headercount-<VERSION>-py3-none-any.whl
+```
+
+Finally, you can also install Headercount manually by cloning this
+repository:
 
 ```bash
 git clone https://github.com/troiganto/headercount
@@ -86,6 +94,8 @@ not, it is a bug and should be reported. It uses [Pep8][] and uses
 [PyLint][] for style checking. Before sending a pull request, please
 make sure that these tools don't give any warnings.
 
+
+[Releases]: https://github.com/troiganto/headercount/releases
 [Pep8]: https://pypi.python.org/pypi/pep8
 [PyLint]: https://pypi.python.org/pypi/pylint
 [Setuptools]: https://pypi.python.org/pypi/setuptools
